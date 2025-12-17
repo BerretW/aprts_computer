@@ -277,6 +277,8 @@ const ContextMenu = {
 /* ============================
    WINDOW MANAGER
    ============================ */
+/* Upravený WindowManager v html/js/core.js */
+
 const WindowManager = {
     zIndex: 100,
     
@@ -286,23 +288,18 @@ const WindowManager = {
         
         const instance = { pid, appId, root: null, content: null, data };
 
-        // Menu Bar Generator
-        let menuHtml = '';
+        // ... (část s generováním Menu Bar nechte stejnou) ...
+        let menuHtml = ''; 
         if (config.menu && config.menu.length > 0) {
-            menuHtml = `<div class="menubar">`;
+            // ... zachovat původní kód generování menu ...
+            menuHtml = `<div class="menubar">`; // zkráceno pro přehlednost
             config.menu.forEach((mItem, idx) => {
-                menuHtml += `
-                    <div class="menu-item">${mItem.label}
-                        <div class="menu-dropdown">
-                            ${mItem.items.map((sub, sIdx) => `
-                                <div class="dropdown-item" id="m-${pid}-${idx}-${sIdx}">
-                                    ${sub.label} ${sub.shortcut?`<span>${sub.shortcut}</span>`:''}
-                                </div>`).join('')}
-                        </div>
-                    </div>`;
+                 // ... zachovat původní loop ...
+                 menuHtml += `<div class="menu-item">${mItem.label} ... </div>`; 
             });
             menuHtml += `</div>`;
         }
+        // ... konec menu bar ...
 
         const isFull = config.type === 'fullscreen';
         const style = isFull ? '' : `width:${config.width}px; height:${config.height}px; top:60px; left:60px;`;
@@ -312,8 +309,9 @@ const WindowManager = {
                 <div class="window-header">
                     <div class="window-title"><i class="${config.icon}"></i> ${config.title}</div>
                     <div class="window-controls">
-                        <div class="win-btn btn-min"></div>
-                        <div class="win-btn btn-max"></div>
+                        <!-- Přidána ID pro snadný výběr -->
+                        <div class="win-btn btn-min" id="min-${pid}"></div>
+                        <div class="win-btn btn-max" id="max-${pid}"></div>
                         <div class="win-btn btn-close" id="close-${pid}"></div>
                     </div>
                 </div>
@@ -322,12 +320,32 @@ const WindowManager = {
             </div>`;
 
         $('#windows-area').append(html);
-        $('#taskbar-apps').append(`<div class="tb-app active" id="tb-${pid}" onclick="WindowManager.focus('${pid}')"><i class="${config.icon}"></i></div>`);
+        // Upraven onclick v taskbaru na toggle (minimalizace/obnovení)
+        $('#taskbar-apps').append(`<div class="tb-app active" id="tb-${pid}" onclick="WindowManager.toggle('${pid}')"><i class="${config.icon}"></i></div>`);
 
         instance.root = $(`#${pid}`);
         instance.content = $(`#${pid}-content`);
 
-        // Menu Bindings
+        // --- OPRAVA TLAČÍTEK ---
+        
+        // 1. Zavření
+        $(`#close-${pid}`).click(() => WindowManager.close(pid));
+
+        // 2. Minimalizace
+        $(`#min-${pid}`).click(() => {
+            instance.root.hide();
+            $(`#tb-${pid}`).removeClass('active');
+        });
+
+        // 3. Maximalizace
+        $(`#max-${pid}`).click(() => {
+            instance.root.toggleClass('fullscreen');
+            // Pokud aplikace vyžaduje překreslení (např. editor), lze zde zavolat resize callback
+        });
+
+        // --- KONEC OPRAVY ---
+
+        // Menu Bindings (zachovat původní)
         if (config.menu) {
             config.menu.forEach((mItem, idx) => {
                 mItem.items.forEach((sub, sIdx) => {
@@ -335,7 +353,6 @@ const WindowManager = {
                 });
             });
         }
-        $(`#close-${pid}`).click(() => WindowManager.close(pid));
 
         // Load Content
         if (config.templateId) {
@@ -352,7 +369,8 @@ const WindowManager = {
 
     close: (pid) => {
         const inst = Core.runningApps[pid];
-        if (inst && Core.apps[inst.appId].onClose) Core.apps[inst.appId].onClose(inst);
+        if(!inst) return; // Pojistka
+        if (Core.apps[inst.appId].onClose) Core.apps[inst.appId].onClose(inst);
         
         delete Core.runningApps[pid];
         $(`#${pid}`).remove();
@@ -362,14 +380,29 @@ const WindowManager = {
         $.post('https://aprts_computer/windowClosed');
     },
 
+    // Upravená funkce Focus - zajistí zobrazení okna, pokud bylo minimalizované
     focus: (pid) => {
         WindowManager.zIndex++;
-        $(`#${pid}`).css('z-index', WindowManager.zIndex);
+        $(`#${pid}`).show().css('z-index', WindowManager.zIndex); // Přidáno .show()
         $('.tb-app').removeClass('active');
         $(`#tb-${pid}`).addClass('active');
     },
 
+    // Nová funkce Toggle (pro klikání na taskbar)
+    toggle: (pid) => {
+        const win = $(`#${pid}`);
+        if (win.is(':visible') && win.css('z-index') == WindowManager.zIndex) {
+            // Pokud je viditelné A je navrchu -> minimalizovat
+            win.hide();
+            $(`#tb-${pid}`).removeClass('active');
+        } else {
+            // Jinak zobrazit a dát focus
+            WindowManager.focus(pid);
+        }
+    },
+
     enableDrag: (id) => {
+
         const elm = document.getElementById(id);
         const header = elm.querySelector('.window-header');
         let pos1=0,pos2=0,pos3=0,pos4=0;

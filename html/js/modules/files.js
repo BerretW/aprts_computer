@@ -4,87 +4,109 @@
 
 // 1. Akce pro SOUBORY
 Core.registerContextItem("file", {
-    label: "Otevřít",
-    icon: "fa-external-link-alt",
-    action: (data) => {
-        if (data.extension === "txt") Core.openApp("notepad", data);
-        else Core.Modal.alert("Info", `Neznámý typ souboru: .${data.extension}`);
-    },
+  label: "Otevřít",
+  icon: "fa-external-link-alt",
+  action: (data) => {
+    if (data.extension === "txt") Core.openApp("notepad", data);
+    else Core.Modal.alert("Info", `Neznámý typ souboru: .${data.extension}`);
+  },
 });
 
 Core.registerContextItem("file", { separator: true });
 
 Core.registerContextItem("file", {
-    label: "Smazat",
-    icon: "fa-trash",
-    action: async (data) => {
-        const confirmed = await Core.Modal.confirm(
-            "Smazat soubor?",
-            `Opravdu chcete trvale smazat soubor <b>${data.name}</b>?`
-        );
-        if (confirmed) {
-            $.post("https://aprts_computer/fileOperation", JSON.stringify({
-                action: "delete", fileName: data.name,
-            }));
-        }
-    },
+  label: "Smazat",
+  icon: "fa-trash",
+  action: async (data) => {
+    const confirmed = await Core.Modal.confirm(
+      "Smazat soubor?",
+      `Opravdu chcete trvale smazat soubor <b>${data.name}</b>?`
+    );
+    if (confirmed) {
+      $.post(
+        "https://aprts_computer/fileOperation",
+        JSON.stringify({
+          action: "delete",
+          fileName: data.name,
+        })
+      );
+    }
+  },
 });
 
 // 2. Akce pro SLOŽKY
 Core.registerContextItem("folder", {
-    label: "Otevřít",
-    icon: "fa-folder-open",
-    action: (data) => {
-       // Logika otevření probíhá přes doubleclick, ale mohla by být i zde
-       // (vyžadovalo by přístup k instanci app, což context menu defaultně nemá přímo)
-    }
+  label: "Otevřít",
+  icon: "fa-folder-open",
+  action: (data) => {
+    // Logika otevření probíhá přes doubleclick, ale mohla by být i zde
+    // (vyžadovalo by přístup k instanci app, což context menu defaultně nemá přímo)
+  },
 });
 
 Core.registerContextItem("folder", {
-    label: "Smazat složku",
-    icon: "fa-trash",
-    action: async (data) => {
-        const confirmed = await Core.Modal.confirm(
-            "Smazat složku?",
-            `Smazáním složky <b>${data.name}</b> přijdete o všechna data v ní. Pokračovat?`
-        );
-        if (confirmed) {
-            $.post("https://aprts_computer/fileOperation", JSON.stringify({
-                action: "delete", fileName: data.name,
-            }));
-        }
+  label: "Smazat složku",
+  icon: "fa-trash",
+  action: async (data) => {
+    const confirmed = await Core.Modal.confirm(
+      "Smazat složku?",
+      `Smazáním složky <b>${data.name}</b> přijdete o všechna data v ní. Pokračovat?`
+    );
+    if (confirmed) {
+      $.post(
+        "https://aprts_computer/fileOperation",
+        JSON.stringify({
+          action: "delete",
+          fileName: data.name,
+        })
+      );
     }
+  },
 });
 
 // 3. Akce pro POZADÍ (Background) - Nový soubor/složka
 Core.registerContextItem("files-background", {
-    label: "Nový textový dokument",
-    icon: "fa-file-alt",
-    action: async (data) => {
-        const name = await Core.Modal.prompt("Nový soubor", "Zadejte název souboru:", "NovyDokument");
-        if (name) {
-            $.post("https://aprts_computer/saveFile", JSON.stringify({
-                pathArray: data.currentPath,
-                fileName: name + ".txt",
-                content: "",
-                extension: "txt"
-            }));
-        }
+  label: "Nový textový dokument",
+  icon: "fa-file-alt",
+  action: async (data) => {
+    const name = await Core.Modal.prompt(
+      "Nový soubor",
+      "Zadejte název souboru:",
+      "NovyDokument"
+    );
+    if (name) {
+      $.post(
+        "https://aprts_computer/saveFile",
+        JSON.stringify({
+          pathArray: data.currentPath,
+          fileName: name + ".txt",
+          content: "",
+          extension: "txt",
+        })
+      );
     }
+  },
 });
 
 Core.registerContextItem("files-background", {
-    label: "Nová složka",
-    icon: "fa-folder-plus",
-    action: async (data) => {
-        const name = await Core.Modal.prompt("Nová složka", "Zadejte název složky:", "NovaSlozka");
-        if (name) {
-            $.post("https://aprts_computer/createFolder", JSON.stringify({
-                pathArray: data.currentPath,
-                folderName: name
-            }));
-        }
+  label: "Nová složka",
+  icon: "fa-folder-plus",
+  action: async (data) => {
+    const name = await Core.Modal.prompt(
+      "Nová složka",
+      "Zadejte název složky:",
+      "NovaSlozka"
+    );
+    if (name) {
+      $.post(
+        "https://aprts_computer/createFolder",
+        JSON.stringify({
+          pathArray: data.currentPath,
+          folderName: name,
+        })
+      );
     }
+  },
 });
 
 // =============================================================================
@@ -92,159 +114,192 @@ Core.registerContextItem("files-background", {
 // =============================================================================
 
 Core.registerApp("files", {
-    title: "Průzkumník",
-    icon: "fas fa-folder-open",
-    iconColor: "#f1c40f",
-    type: "window",
-    width: 800,
-    height: 500,
-    templateId: "tpl-files",
-  
-    systemFiles: [], // Zde se ukládají data z LUA
-  
-    onOpen: (app) => {
-        app.currentPath = [];
-  
-        // Bind tlačítek navigace
-        app.content.find("#btn-back").click(() => app.methods.goUp());
-        app.content.find("#btn-home").click(() => app.methods.goHome());
-  
-        // METODY INSTANCE
-        app.methods = {
-            render: () => {
-                // 1. Procházení stromem složek
-                let currentFolder = Core.apps["files"].systemFiles;
-                app.currentPath.forEach((name) => {
-                    const f = currentFolder.find(i => i.name === name && i.type === "folder");
-                    if (f) currentFolder = f.children;
-                });
-  
-                const grid = app.content.find("#files-grid");
-                grid.empty();
+  title: "Průzkumník",
+  icon: "fas fa-folder-open",
+  iconColor: "#f1c40f",
+  type: "window",
+  width: 800,
+  height: 500,
+  templateId: "tpl-files",
 
-                // 2. Kontextové menu na pozadí (pro grid)
-                grid.off('contextmenu').on('contextmenu', (e) => {
-                    if (e.target === e.currentTarget || e.target.id === 'files-grid') {
-                        // Předáváme aktuální cestu do akce
-                        ContextMenu.show(e, 'files-background', { currentPath: [...app.currentPath] });
-                    }
-                });
-  
-                // 3. Vykreslení položek
-                currentFolder.forEach((item) => {
-                    const isFolder = item.type === "folder";
-                    const icon = isFolder ? "fa-folder" : "fa-file-alt";
-                    const color = isFolder ? "#f1c40f" : "#ecf0f1";
-  
-                    // HTML Itemu - přidáme draggable
-                    const el = $(`
+  systemFiles: [], // Zde se ukládají data z LUA
+
+  onOpen: (app) => {
+    app.currentPath = [];
+
+    // Bind tlačítek navigace
+    app.content.find("#btn-back").click(() => app.methods.goUp());
+    app.content.find("#btn-home").click(() => app.methods.goHome());
+
+    // METODY INSTANCE
+    app.methods = {
+      render: () => {
+        // 1. Procházení stromem složek
+        let currentFolder = Core.apps["files"].systemFiles;
+        app.currentPath.forEach((name) => {
+          const f = currentFolder.find(
+            (i) => i.name === name && i.type === "folder"
+          );
+          if (f) currentFolder = f.children;
+        });
+
+        const grid = app.content.find("#files-grid");
+        grid.empty();
+        grid.on("dragover", (e) => {
+          e.preventDefault(); // Nutné pro povolení dropu
+          e.stopPropagation();
+          if (e.originalEvent.dataTransfer) {
+            // Nastavíme vizuálně "move", aby uživatel viděl, že stále drží soubor
+            e.originalEvent.dataTransfer.dropEffect = "move";
+          }
+        });
+        grid.on("drop", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        });
+        // 2. Kontextové menu na pozadí (pro grid)
+        grid.off("contextmenu").on("contextmenu", (e) => {
+          if (e.target === e.currentTarget || e.target.id === "files-grid") {
+            // Předáváme aktuální cestu do akce
+            ContextMenu.show(e, "files-background", {
+              currentPath: [...app.currentPath],
+            });
+          }
+        });
+
+        // 3. Vykreslení položek
+        currentFolder.forEach((item) => {
+          const isFolder = item.type === "folder";
+          const icon = isFolder ? "fa-folder" : "fa-file-alt";
+          const color = isFolder ? "#f1c40f" : "#ecf0f1";
+
+          // HTML Itemu - přidáme draggable
+          const el = $(`
                         <div class="file-item" draggable="true">
                             <i class="fas ${icon}" style="color:${color}"></i>
                             <span>${item.name}</span>
                         </div>
                     `);
-  
-                    // --- EVENTY ---
 
-                    // A) Double Click (Otevření)
-                    el.dblclick(() => {
-                        if (isFolder) {
-                            app.currentPath.push(item.name);
-                            app.methods.render();
-                        } else {
-                            if (item.extension === "txt") Core.openApp("notepad", item);
-                            else if (item.extension === "png") Core.Modal.alert("Foto", "Prohlížeč fotek není implementován.");
-                            else Core.Modal.alert("Info", `Soubor ${item.name} nelze otevřít.`);
-                        }
-                    });
-  
-                    // B) Context Menu (Pravé tlačítko)
-                    el.on("contextmenu", (e) => {
-                        e.stopPropagation(); // Zamezí otevření menu pozadí
-                        ContextMenu.show(e, isFolder ? "folder" : "file", item);
-                    });
+          // --- EVENTY ---
 
-                    // C) DRAG & DROP LOGIKA
-                    
-                    // Drag Start: Co přenášíme?
-                    el.on('dragstart', (e) => {
-                        const dt = e.originalEvent.dataTransfer;
-                        dt.effectAllowed = "move";
-                        // Uložíme si info o přenášeném souboru
-                        dt.setData("text/plain", JSON.stringify({ 
-                            name: item.name, 
-                            type: item.type 
-                        })); 
-                    });
+          // A) Double Click (Otevření)
+          el.dblclick(() => {
+            if (isFolder) {
+              app.currentPath.push(item.name);
+              app.methods.render();
+            } else {
+              if (item.extension === "txt") Core.openApp("notepad", item);
+              else if (item.extension === "png")
+                Core.Modal.alert("Foto", "Prohlížeč fotek není implementován.");
+              else
+                Core.Modal.alert("Info", `Soubor ${item.name} nelze otevřít.`);
+            }
+          });
 
-                    // Drop Zone (Pouze pokud je cíl složka)
-                    if (isFolder) {
-                        // Drag Over: Povolíme drop a přidáme styl
-                        el.on('dragover', (e) => {
-                            e.preventDefault(); 
-                            e.stopPropagation();
-                            el.addClass('drag-over');
-                        });
+          // B) Context Menu (Pravé tlačítko)
+          el.on("contextmenu", (e) => {
+            e.stopPropagation(); // Zamezí otevření menu pozadí
+            ContextMenu.show(e, isFolder ? "folder" : "file", item);
+          });
 
-                        // Drag Leave: Odstraníme styl
-                        el.on('dragleave', (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            el.removeClass('drag-over');
-                        });
+          // C) DRAG & DROP LOGIKA
 
-                        // Drop: Zpracujeme přesun
-                        el.on('drop', (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            el.removeClass('drag-over');
+          // Drag Start: Co přenášíme?
+          el.on("dragstart", (e) => {
+            const dt = e.originalEvent.dataTransfer;
+            dt.effectAllowed = "move";
+            // Uložíme si info o přenášeném souboru
+            dt.setData(
+              "text/plain",
+              JSON.stringify({
+                name: item.name,
+                type: item.type,
+              })
+            );
+          });
 
-                            const rawData = e.originalEvent.dataTransfer.getData("text/plain");
-                            if(!rawData) return;
-                            
-                            const draggedItem = JSON.parse(rawData);
+          // Drop Zone (Pouze pokud je cíl složka)
+          if (isFolder) {
+            // Drag Over: Povolíme drop a přidáme styl
+            el.on("dragover", (e) => {
+              e.preventDefault();
+              e.stopPropagation();
 
-                            // Validace: Nemůžeme přesunout složku do sebe samé
-                            if(draggedItem.name === item.name) return;
+              // OPRAVA: Musíme explicitně říct prohlížeči, že přesun je povolen
+              // a použít originalEvent, protože jQuery objekt 'e' nemá dataTransfer
+              if (e.originalEvent.dataTransfer) {
+                e.originalEvent.dataTransfer.dropEffect = "move";
+              }
 
-                            // Cílová cesta = Aktuální cesta + Jméno složky, do které dropujeme
-                            const targetPath = [...app.currentPath, item.name];
+              el.addClass("drag-over");
+            });
 
-                            // Odeslání na server
-                            $.post("https://aprts_computer/fileOperation", JSON.stringify({
-                                action: "move",
-                                fileName: draggedItem.name,
-                                targetPath: targetPath
-                            }));
-                        });
-                    }
-  
-                    grid.append(el);
-                });
-  
-                // Aktualizace UI (breadcrumbs, status bar)
-                app.content.find("#path-input").val("C:/" + app.currentPath.join("/"));
-                app.content.find("#files-status").text(`Položek: ${currentFolder.length}`);
-            },
+            // Drag Leave: Odstraníme styl
+            el.on("dragleave", (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              el.removeClass("drag-over");
+            });
 
-            // Navigace Zpět
-            goUp: () => {
-                if(app.currentPath.length > 0) {
-                    app.currentPath.pop();
-                    app.methods.render();
-                }
-            },
-            
-            // Navigace Domů (Root)
-            goHome: () => {
-                app.currentPath = [];
-                app.methods.render();
-            },
-        };
-  
-        // První render při otevření
+            // Drop: Zpracujeme přesun
+            el.on("drop", (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              el.removeClass("drag-over");
+
+              const rawData =
+                e.originalEvent.dataTransfer.getData("text/plain");
+              if (!rawData) return;
+
+              const draggedItem = JSON.parse(rawData);
+
+              // Validace: Nemůžeme přesunout složku do sebe samé
+              if (draggedItem.name === item.name) return;
+
+              // Cílová cesta = Aktuální cesta + Jméno složky, do které dropujeme
+              const targetPath = [...app.currentPath, item.name];
+
+              // Odeslání na server
+              $.post(
+                "https://aprts_computer/fileOperation",
+                JSON.stringify({
+                  action: "move",
+                  fileName: draggedItem.name,
+                  targetPath: targetPath,
+                })
+              );
+            });
+          }
+
+          grid.append(el);
+        });
+
+        // Aktualizace UI (breadcrumbs, status bar)
+        app.content.find("#path-input").val("C:/" + app.currentPath.join("/"));
+        app.content
+          .find("#files-status")
+          .text(`Položek: ${currentFolder.length}`);
+      },
+
+      // Navigace Zpět
+      goUp: () => {
+        if (app.currentPath.length > 0) {
+          app.currentPath.pop();
+          app.methods.render();
+        }
+      },
+
+      // Navigace Domů (Root)
+      goHome: () => {
+        app.currentPath = [];
         app.methods.render();
-        // Nastavení refresh funkce pro Core (aby server mohl refreshnout okno)
-        app.refresh = app.methods.render;
-    },
+      },
+    };
+
+    // První render při otevření
+    app.methods.render();
+    // Nastavení refresh funkce pro Core (aby server mohl refreshnout okno)
+    app.refresh = app.methods.render;
+  },
 });

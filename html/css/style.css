@@ -63,6 +63,14 @@ body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: 
 .window-header { height: 30px; background: #2d2d2d; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; border-bottom: 1px solid #000; }
 .window-title { font-size: 12px; pointer-events: none; }
 .window-controls { display: flex; gap: 10px; }
+.window-content {
+    flex: 1;                 /* Roztáhne se na zbytek výšky okna */
+    display: flex;           /* Aby se i child prvky (app-layout) roztáhly */
+    flex-direction: column;
+    overflow: hidden;        /* Ořízne přetékající obsah */
+    position: relative;
+    height: 100%;            /* Pojistka */
+}
 .win-btn { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
 .btn-close { background: #ff5f56; }
 .btn-min { background: #ffbd2e; }
@@ -138,3 +146,7 @@ body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: 
 .modal-btn { padding: 6px 15px; border: 1px solid #444; background: #333; color: white; cursor: pointer; font-size: 12px; min-width: 70px; }
 .modal-btn:hover { background: #444; }
 .modal-btn.primary { background: var(--main-color); border-color: var(--main-color); }
+
+.file-item * {
+    pointer-events: none;
+}
