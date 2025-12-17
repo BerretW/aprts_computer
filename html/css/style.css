@@ -1,0 +1,216 @@
+:root {
+    --main-color: #0078d7;
+    --win-bg: #202020;
+    --text-color: #ffffff;
+    --border: 1px solid #333;
+}
+
+body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: var(--text-color); user-select: none; }
+
+/* Login */
+#login-screen { 
+    position: absolute; width: 100%; height: 100%; 
+    background: #000; 
+    display: none; /* DŮLEŽITÉ: Defaultně skryto (zobrazí až JS) */
+    align-items: center; justify-content: center; 
+    z-index: 10000; 
+}
+.login-box { width: 300px; text-align: center; }
+.user-avatar { font-size: 80px; margin-bottom: 20px; color: var(--main-color); }
+.input-group { display: flex; margin: 15px 0; border: 1px solid #444; }
+.input-group input { flex: 1; background: #111; border: none; color: white; padding: 10px; outline: none; }
+.input-group button { background: var(--main-color); border: none; color: white; cursor: pointer; padding: 0 15px; }
+.btn-shutdown { background: transparent; color: #e74c3c; border: 1px solid #e74c3c; padding: 5px 15px; cursor: pointer; margin-top: 20px; border-radius: 4px; }
+
+/* Desktop */
+#os-root { 
+    position: absolute; 
+    top: 0; left: 0; width: 100%; height: 100%; 
+    background-color: #202020; /* Fallback barva */
+    background-image: url('https://r4.wallpaperflare.com/wallpaper/245/586/492/windows-10-wallpaper-1b06992d96f13f9905c4ebd94db5bc60.jpg');
+    background-size: cover;
+    background-position: center;
+    display: none; /* DŮLEŽITÉ: Defaultně skryto */
+}
+#desktop-icons { padding: 10px; display: flex; flex-direction: column; gap: 10px; flex-wrap: wrap; height: 90%; align-content: flex-start; }
+.desktop-icon { width: 80px; text-align: center; cursor: pointer; padding: 5px; text-shadow: 0 1px 2px black; }
+.desktop-icon:hover { background: rgba(255,255,255,0.1); border-radius: 5px; }
+.desktop-icon i { font-size: 32px; display: block; margin-bottom: 5px; }
+
+/* Taskbar */
+#taskbar { position: absolute; bottom: 0; width: 100%; height: 40px; background: rgba(20,20,20,0.95); display: flex; align-items: center; border-top: var(--border); z-index: 9000; }
+.start-btn { width: 48px; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; }
+.start-btn:hover { background: #333; color: var(--main-color); }
+#taskbar-apps { flex: 1; display: flex; gap: 2px; padding-left: 10px; }
+.tb-app { width: 40px; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; border-bottom: 2px solid transparent; }
+.tb-app:hover { background: #333; }
+.tb-app.active { background: #333; border-bottom-color: var(--main-color); }
+#tray { padding: 0 15px; font-size: 12px; display: flex; gap: 15px; }
+
+/* Start Menu */
+#start-menu { position: absolute; bottom: 40px; left: 0; width: 350px; height: 450px; background: #1a1a1a; display: none; border: var(--border); z-index: 9001; display: flex; }
+.start-sidebar { width: 50px; background: #111; display: flex; flex-direction: column-reverse; align-items: center; padding-bottom: 10px; }
+.start-sidebar div { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #aaa; }
+.start-sidebar div:hover { color: white; background: #333; }
+.start-content { flex: 1; padding: 10px; }
+.start-item { padding: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+.start-item:hover { background: #333; }
+
+/* WINDOW SYSTEM */
+.window { position: absolute; background: var(--win-bg); border: 1px solid #444; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; border-radius: 4px; }
+.window.fullscreen { top: 0 !important; left: 0 !important; width: 100% !important; height: calc(100% - 40px) !important; border-radius: 0; }
+
+.window-header { height: 30px; background: #2d2d2d; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; border-bottom: 1px solid #000; }
+.window-title { font-size: 12px; pointer-events: none; }
+.window-controls { display: flex; gap: 10px; }
+.win-btn { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
+.btn-close { background: #ff5f56; }
+.btn-min { background: #ffbd2e; }
+.btn-max { background: #27c93f; }
+
+/* MENU BAR (Top Menu) */
+.menubar { height: 24px; background: #333; display: flex; align-items: center; padding-left: 5px; border-bottom: 1px solid #111; }
+.menu-item { position: relative; padding: 0 10px; font-size: 12px; cursor: pointer; height: 100%; display: flex; align-items: center; }
+.menu-item:hover { background: #444; }
+
+/* Dropdown */
+.menu-dropdown { position: absolute; top: 100%; left: 0; background: #2d2d2d; border: 1px solid #555; min-width: 150px; display: none; z-index: 100; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+.menu-item:hover .menu-dropdown { display: block; }
+.dropdown-item { padding: 8px 15px; display: flex; justify-content: space-between; color: white; }
+.dropdown-item:hover { background: var(--main-color); }
+.dropdown-item span { opacity: 0.5; font-size: 10px; margin-left: 10px; }
+
+/* Content */
+.window-content { flex: 1; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+
+/* App Specific */
+.app-layout { display: flex; flex-direction: column; height: 100%; }
+.app-padding { padding: 20px; color: white; }
+.files-breadcrumbs { display: flex; background: #333; padding: 5px; gap: 5px; }
+.files-breadcrumbs input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 0 5px; }
+.files-grid { flex: 1; padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 5px; overflow-y: auto; align-content: flex-start; }
+.file-item { text-align: center; cursor: pointer; padding: 5px; border: 1px solid transparent; }
+.file-item:hover { background: rgba(255,255,255,0.05); border-color: #555; }
+.file-item i { font-size: 36px; display: block; margin-bottom: 5px; }
+
+
+/* === CONTEXT MENU (Pravé tlačítko) === */
+.context-menu {
+    position: absolute;
+    min-width: 180px;
+    background: #2d2d2d;
+    border: 1px solid #444;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+    z-index: 99999;
+    padding: 5px 0;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+}
+
+.ctx-item {
+    padding: 8px 15px;
+    font-size: 13px;
+    cursor: pointer;
+    color: #eee;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: 0.1s;
+}
+
+.ctx-item:hover {
+    background: var(--main-color);
+    color: white;
+}
+
+.ctx-item i {
+    width: 20px;
+    text-align: center;
+    color: #aaa;
+}
+.ctx-item:hover i { color: white; }
+
+.ctx-separator {
+    height: 1px;
+    background: #444;
+    margin: 4px 0;
+}
+
+/* === MODAL SYSTEM === */
+#modal-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6); /* Ztmavení pozadí */
+    backdrop-filter: blur(2px);     /* Rozmazání pozadí */
+    z-index: 200000; /* Musí být nad vším (i nad context menu) */
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.os-modal {
+    width: 350px;
+    background: #2b2b2b;
+    border: 1px solid #444;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    animation: modalPop 0.2s ease-out;
+}
+
+@keyframes modalPop {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+    background: #202020;
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: 1px solid #333;
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+.modal-body {
+    padding: 20px;
+    font-size: 13px;
+    color: #ddd;
+}
+
+.modal-body input {
+    width: 100%;
+    margin-top: 10px;
+    padding: 8px;
+    background: #1a1a1a;
+    border: 1px solid #444;
+    color: white;
+    outline: none;
+    box-sizing: border-box; /* Aby padding nerozbil šířku */
+}
+
+.modal-body input:focus { border-color: var(--main-color); }
+
+.modal-footer {
+    padding: 10px 15px;
+    background: #252525;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-btn {
+    padding: 6px 15px;
+    border: 1px solid #444;
+    background: #333;
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+    min-width: 70px;
+}
+
+.modal-btn:hover { background: #444; }
+.modal-btn.primary { background: var(--main-color); border-color: var(--main-color); }
+.modal-btn.primary:hover { opacity: 0.9; }

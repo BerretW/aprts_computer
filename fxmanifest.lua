@@ -1,22 +1,25 @@
 fx_version 'cerulean'
 lua54 'yes'
 name 'aprts_computer'
-description 'Desktop PC and Laptop System'
+description 'Advanced Computer System Core'
 author 'SpoiledMouse'
-version '1.0.0'
+version '2.0.0'
 
 games {'gta5'}
 
 ui_page 'html/index.html'
 
-shared_script '@ox_lib/init.lua'
-shared_script 'config.lua'
+shared_scripts {
+    '@ox_lib/init.lua',
+    'config.lua'
+}
 
 files {
     'html/index.html',
-    'html/style.css',
-    'html/script.js',
-    'html/libs/*' 
+    'html/css/style.css',
+    'html/libs/*',
+    'html/js/core.js',
+    'html/js/modules/*.js' -- Načte všechny moduly
 }
 
 client_scripts {
@@ -27,6 +30,13 @@ client_scripts {
 server_script 'server.lua'
 
 exports {
-    'RegisterApp',
-    'RegisterUsbApp' -- Nový export pro USB
+    'RegisterApp',    -- Registrace ikony do menu
+    'OpenWindow',     -- Otevření okna s vlastním HTML
+    'GetSystemData'   -- Získání dat o PC (HW, User)
+}
+
+dependencies {
+    'oxmysql',
+    'ox_lib',
+    'ox_inventory'
 }
