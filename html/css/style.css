@@ -150,3 +150,7 @@ body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: 
 .file-item * {
     pointer-events: none;
 }
+.file-item.dragging {
+    opacity: 0.5;
+    /* pointer-events: none;  <-- TOTO SMAZAT! Způsobovalo zmizení ducha */
+}

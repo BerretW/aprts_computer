@@ -206,10 +206,13 @@ Core.registerApp("files", {
           // C) DRAG & DROP LOGIKA
 
           // Drag Start: Co přenášíme?
+// C) DRAG & DROP LOGIKA
+
+          // Drag Start
           el.on("dragstart", (e) => {
             const dt = e.originalEvent.dataTransfer;
             dt.effectAllowed = "move";
-            // Uložíme si info o přenášeném souboru
+            
             dt.setData(
               "text/plain",
               JSON.stringify({
@@ -217,30 +220,39 @@ Core.registerApp("files", {
                 type: item.type,
               })
             );
+
+            // Pro jistotu explicitně nastavíme obrázek dragu (pokud by zlobil)
+            if (dt.setDragImage) {
+                 dt.setDragImage(el[0], 0, 0);
+            }
+
+            // Přidáme styl se zpožděním, aby si prohlížeč stihl vyfotit "ducha"
+            setTimeout(() => {
+                el.addClass('dragging');
+            }, 0);
           });
 
-          // Drop Zone (Pouze pokud je cíl složka)
-          if (isFolder) {
-            // Drag Over: Povolíme drop a přidáme styl
-            el.on("dragover", (e) => {
-              e.preventDefault();
-              e.stopPropagation();
+          // Drag End
+          el.on("dragend", (e) => {
+              el.removeClass('dragging');
+          });
 
-              // OPRAVA: Musíme explicitně říct prohlížeči, že přesun je povolen
-              // a použít originalEvent, protože jQuery objekt 'e' nemá dataTransfer
-              if (e.originalEvent.dataTransfer) {
-                e.originalEvent.dataTransfer.dropEffect = "move";
+          // --- UNIVERZÁLNÍ DRAGOVER (PRO VŠECHNY POLOŽKY) ---
+          // Toto zajistí, že se neukáže zakazující ikona, když jedeme nad jiným souborem
+          el.on("dragover", (e) => {
+              e.preventDefault(); 
+              e.stopPropagation();
+              // Povolíme vizuální efekt přesunu všude
+              if(e.originalEvent.dataTransfer) {
+                  e.originalEvent.dataTransfer.dropEffect = "move";
               }
+          });
 
-              el.addClass("drag-over");
-            });
-
-            // Drag Leave: Odstraníme styl
-            el.on("dragleave", (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              el.removeClass("drag-over");
-            });
+          // Drop Zone (Pouze pokud je cíl SLOŽKA)
+          if (isFolder) {
+            // Drag Enter/Over vizuál pro složku
+            el.on("dragenter", () => el.addClass("drag-over"));
+            el.on("dragleave", () => el.removeClass("drag-over"));
 
             // Drop: Zpracujeme přesun
             el.on("drop", (e) => {
@@ -248,19 +260,18 @@ Core.registerApp("files", {
               e.stopPropagation();
               el.removeClass("drag-over");
 
-              const rawData =
-                e.originalEvent.dataTransfer.getData("text/plain");
+              const rawData = e.originalEvent.dataTransfer.getData("text/plain");
               if (!rawData) return;
 
               const draggedItem = JSON.parse(rawData);
 
-              // Validace: Nemůžeme přesunout složku do sebe samé
+              // Validace
               if (draggedItem.name === item.name) return;
 
-              // Cílová cesta = Aktuální cesta + Jméno složky, do které dropujeme
+              // Cílová cesta
               const targetPath = [...app.currentPath, item.name];
 
-              // Odeslání na server
+              // Odeslání
               $.post(
                 "https://aprts_computer/fileOperation",
                 JSON.stringify({
