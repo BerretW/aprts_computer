@@ -11,7 +11,7 @@ body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: 
 #login-screen { 
     position: absolute; width: 100%; height: 100%; 
     background: #000; 
-    display: none; /* DŮLEŽITÉ: Defaultně skryto (zobrazí až JS) */
+    display: none; 
     align-items: center; justify-content: center; 
     z-index: 10000; 
 }
@@ -26,11 +26,11 @@ body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: 
 #os-root { 
     position: absolute; 
     top: 0; left: 0; width: 100%; height: 100%; 
-    background-color: #202020; /* Fallback barva */
-    background-image: url('https://r4.wallpaperflare.com/wallpaper/245/586/492/windows-10-wallpaper-1b06992d96f13f9905c4ebd94db5bc60.jpg');
+    background-color: #202020;
+    background-image: url('https://images.unsplash.com/photo-1542640244-7e672d6cef4e?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
     background-size: cover;
     background-position: center;
-    display: none; /* DŮLEŽITÉ: Defaultně skryto */
+    display: none;
 }
 #desktop-icons { padding: 10px; display: flex; flex-direction: column; gap: 10px; flex-wrap: wrap; height: 90%; align-content: flex-start; }
 .desktop-icon { width: 80px; text-align: center; cursor: pointer; padding: 5px; text-shadow: 0 1px 2px black; }
@@ -68,33 +68,42 @@ body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: 
 .btn-min { background: #ffbd2e; }
 .btn-max { background: #27c93f; }
 
-/* MENU BAR (Top Menu) */
+/* MENU BAR */
 .menubar { height: 24px; background: #333; display: flex; align-items: center; padding-left: 5px; border-bottom: 1px solid #111; }
 .menu-item { position: relative; padding: 0 10px; font-size: 12px; cursor: pointer; height: 100%; display: flex; align-items: center; }
 .menu-item:hover { background: #444; }
-
-/* Dropdown */
 .menu-dropdown { position: absolute; top: 100%; left: 0; background: #2d2d2d; border: 1px solid #555; min-width: 150px; display: none; z-index: 100; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
 .menu-item:hover .menu-dropdown { display: block; }
 .dropdown-item { padding: 8px 15px; display: flex; justify-content: space-between; color: white; }
 .dropdown-item:hover { background: var(--main-color); }
 .dropdown-item span { opacity: 0.5; font-size: 10px; margin-left: 10px; }
 
-/* Content */
-.window-content { flex: 1; position: relative; display: flex; flex-direction: column; overflow: hidden; }
-
-/* App Specific */
+/* App Specific - FILES */
 .app-layout { display: flex; flex-direction: column; height: 100%; }
 .app-padding { padding: 20px; color: white; }
 .files-breadcrumbs { display: flex; background: #333; padding: 5px; gap: 5px; }
 .files-breadcrumbs input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 0 5px; }
 .files-grid { flex: 1; padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 5px; overflow-y: auto; align-content: flex-start; }
-.file-item { text-align: center; cursor: pointer; padding: 5px; border: 1px solid transparent; }
+
+.file-item { 
+    text-align: center; 
+    cursor: pointer; 
+    padding: 5px; 
+    border: 1px solid transparent; 
+    border-radius: 4px;
+    transition: all 0.2s;
+}
 .file-item:hover { background: rgba(255,255,255,0.05); border-color: #555; }
 .file-item i { font-size: 36px; display: block; margin-bottom: 5px; }
 
+/* DRAG & DROP STYLING */
+.file-item.drag-over {
+    background: rgba(241, 196, 15, 0.2); /* Zlatavé pozadí */
+    border: 1px dashed #f1c40f;
+    transform: scale(1.05);
+}
 
-/* === CONTEXT MENU (Pravé tlačítko) === */
+/* Context Menu */
 .context-menu {
     position: absolute;
     min-width: 180px;
@@ -107,110 +116,25 @@ body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: 
     display: flex;
     flex-direction: column;
 }
-
-.ctx-item {
-    padding: 8px 15px;
-    font-size: 13px;
-    cursor: pointer;
-    color: #eee;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: 0.1s;
-}
-
-.ctx-item:hover {
-    background: var(--main-color);
-    color: white;
-}
-
-.ctx-item i {
-    width: 20px;
-    text-align: center;
-    color: #aaa;
-}
+.ctx-item { padding: 8px 15px; font-size: 13px; cursor: pointer; color: #eee; display: flex; align-items: center; gap: 10px; }
+.ctx-item:hover { background: var(--main-color); color: white; }
+.ctx-item i { width: 20px; text-align: center; color: #aaa; }
 .ctx-item:hover i { color: white; }
+.ctx-separator { height: 1px; background: #444; margin: 4px 0; }
 
-.ctx-separator {
-    height: 1px;
-    background: #444;
-    margin: 4px 0;
-}
-
-/* === MODAL SYSTEM === */
+/* Modal */
 #modal-overlay {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.6); /* Ztmavení pozadí */
-    backdrop-filter: blur(2px);     /* Rozmazání pozadí */
-    z-index: 200000; /* Musí být nad vším (i nad context menu) */
-    display: none;
-    align-items: center;
-    justify-content: center;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(2px);
+    z-index: 200000; display: none; align-items: center; justify-content: center;
 }
-
-.os-modal {
-    width: 350px;
-    background: #2b2b2b;
-    border: 1px solid #444;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    border-radius: 4px;
-    display: flex;
-    flex-direction: column;
-    animation: modalPop 0.2s ease-out;
-}
-
-@keyframes modalPop {
-    from { transform: scale(0.9); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
-.modal-header {
-    background: #202020;
-    padding: 10px 15px;
-    font-size: 14px;
-    font-weight: 600;
-    border-bottom: 1px solid #333;
-    display: flex; justify-content: space-between; align-items: center;
-}
-
-.modal-body {
-    padding: 20px;
-    font-size: 13px;
-    color: #ddd;
-}
-
-.modal-body input {
-    width: 100%;
-    margin-top: 10px;
-    padding: 8px;
-    background: #1a1a1a;
-    border: 1px solid #444;
-    color: white;
-    outline: none;
-    box-sizing: border-box; /* Aby padding nerozbil šířku */
-}
-
+.os-modal { width: 350px; background: #2b2b2b; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.8); border-radius: 4px; display: flex; flex-direction: column; animation: modalPop 0.2s ease-out; }
+@keyframes modalPop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.modal-header { background: #202020; padding: 10px 15px; font-size: 14px; font-weight: 600; border-bottom: 1px solid #333; }
+.modal-body { padding: 20px; font-size: 13px; color: #ddd; }
+.modal-body input { width: 100%; margin-top: 10px; padding: 8px; background: #1a1a1a; border: 1px solid #444; color: white; outline: none; box-sizing: border-box; }
 .modal-body input:focus { border-color: var(--main-color); }
-
-.modal-footer {
-    padding: 10px 15px;
-    background: #252525;
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-.modal-btn {
-    padding: 6px 15px;
-    border: 1px solid #444;
-    background: #333;
-    color: white;
-    cursor: pointer;
-    font-size: 12px;
-    min-width: 70px;
-}
-
+.modal-footer { padding: 10px 15px; background: #252525; display: flex; justify-content: flex-end; gap: 10px; }
+.modal-btn { padding: 6px 15px; border: 1px solid #444; background: #333; color: white; cursor: pointer; font-size: 12px; min-width: 70px; }
 .modal-btn:hover { background: #444; }
 .modal-btn.primary { background: var(--main-color); border-color: var(--main-color); }
-.modal-btn.primary:hover { opacity: 0.9; }
