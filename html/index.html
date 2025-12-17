@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>APRTS OS 2.0</title>
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="libs/all.min.css">
+    
+    <!-- Quill Editor (Online CDN pro funkčnost, doporučuji stáhnout lokálně) -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+    <!-- jQuery & SweetAlert -->
+    <script src="libs/jquery-3.6.0.min.js"></script>
+    <script src="libs/sweetalert2.all.min.js"></script>
+
+    <!-- Vlastní styly -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- 1. LOGIN SCREEN -->
+    <div id="login-screen" style="display: none;">
+        <div class="login-box">
+            <div class="user-avatar"><i class="fas fa-user-circle"></i></div>
+            <h2 id="login-username-display">Uživatel</h2>
+            
+            <div class="login-input-group">
+                <input type="password" id="login-password" placeholder="Zadejte heslo..." onkeydown="if(event.key === 'Enter') OS.login()">
+                <button onclick="OS.login()"><i class="fas fa-arrow-right"></i></button>
+            </div>
+            
+            <div class="login-footer">
+                <button class="btn-shutdown" onclick="OS.shutdown()"><i class="fas fa-power-off"></i> Vypnout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. DESKTOP ENVIRONMENT -->
+    <div id="desktop-container" style="display: none;">
+        
+        <!-- Plocha s ikonami -->
+        <div id="desktop-icons">
+            <!-- Generováno JS -->
+        </div>
+
+        <!-- Oblast pro Okna -->
+        <div id="windows-area">
+            <!-- Sem se dynamicky vkládají okna -->
+        </div>
+
+        <!-- Taskbar -->
+        <div id="taskbar">
+            <div class="start-btn" onclick="OS.toggleStartMenu()"><i class="fab fa-windows"></i></div>
+            <div id="taskbar-apps">
+                <!-- Ikony běžících aplikací -->
+            </div>
+            <div id="tray">
+                <div id="hw-monitor">RAM: <span id="ram-usage">0</span>GB</div>
+                <div id="clock">12:00</div>
+            </div>
+        </div>
+
+        <!-- Start Menu -->
+        <div id="start-menu" style="display: none;">
+            <div class="start-sidebar">
+                <div onclick="OS.shutdown()"><i class="fas fa-power-off"></i></div>
+                <div onclick="OS.openApp('settings')"><i class="fas fa-cog"></i></div>
+            </div>
+            <div class="start-content" id="start-app-list">
+                <!-- Seznam všech aplikací -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- ŠABLONY APLIKACÍ (Templates)               -->
+    <!-- ========================================== -->
+
+    <!-- 1. FILE EXPLORER -->
+    <template id="tpl-files">
+        <div class="app-layout">
+            <div class="files-toolbar">
+                <button onclick="Files.goHome()"><i class="fas fa-home"></i></button>
+                <div class="files-path" id="files-breadcrumbs">C:/</div>
+            </div>
+            <div class="files-grid" id="files-view">
+                <!-- Soubory -->
+            </div>
+            <div class="files-statusbar">
+                <span id="disk-info">Volné místo: Vypočítávám...</span>
+            </div>
+        </div>
+    </template>
+
+    <!-- 2. NOTEPAD (Quill) -->
+    <template id="tpl-notepad">
+        <div class="app-layout" style="background: #fff; color: #000; display: flex; flex-direction: column;">
+            <div class="notepad-toolbar">
+                <button onclick="Notepad.save()"><i class="fas fa-save"></i> Uložit</button>
+                <input type="text" id="notepad-filename" placeholder="název_souboru" value="dokument">
+                <select id="notepad-ext">
+                    <option value="txt">.txt</option>
+                    <option value="md">.md</option>
+                </select>
+            </div>
+            <!-- Quill kontejner -->
+            <div id="editor-container" style="flex-grow: 1; border: none;"></div>
+        </div>
+    </template>
+
+    <!-- 3. SETTINGS -->
+    <template id="tpl-settings">
+        <div class="app-padding">
+            <h2>Nastavení</h2>
+            <div class="setting-group">
+                <label>Barva systému</label>
+                <input type="color" id="setting-color" onchange="OS.applyTheme(this.value, null)">
+            </div>
+            <div class="setting-group">
+                <label>URL Tapety</label>
+                <input type="text" id="setting-wallpaper" placeholder="https://imgur.com/..." onchange="OS.applyTheme(null, this.value)">
+            </div>
+            <button class="btn-primary" onclick="OS.saveSettings()">Uložit nastavení</button>
+            
+            <hr>
+            <h3>O systému</h3>
+            <div id="system-specs">Načítání...</div>
+        </div>
+    </template>
+
+    <!-- 4. INSTALLER (USB) -->
+    <template id="tpl-installer">
+        <div class="app-padding">
+            <h3>Správce Zařízení</h3>
+            <p>Zde můžete instalovat software z připojených disků.</p>
+            
+            <button class="btn-secondary" onclick="OS.scanUsb()">
+                <i class="fas fa-sync"></i> Skenovat USB porty
+            </button>
+            
+            <div id="usb-list-container" style="margin-top: 15px;"></div>
+        </div>
+    </template>
+
+    <!-- 5. IMAGE VIEWER -->
+    <template id="tpl-photo">
+        <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000;">
+            <img id="photo-viewer-img" src="" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+        </div>
+    </template>
+
+    <script src="script.js"></script>
+</body>
+</html>
